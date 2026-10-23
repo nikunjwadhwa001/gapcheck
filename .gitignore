@@ -1,0 +1,18 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Go
+backend/bin/
+backend/server
+*.test
+*.out
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Flutter-specific ignores live in app/.gitignore
