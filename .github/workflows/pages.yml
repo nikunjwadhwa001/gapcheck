@@ -1,0 +1,59 @@
+name: Deploy web app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - app/**
+      - .github/workflows/pages.yml
+  workflow_dispatch: # "Run workflow" button, e.g. after changing API_BASE_URL
+
+permissions:
+  contents: read
+  pages: write # publish to GitHub Pages
+  id-token: write # prove to Pages that this workflow is allowed to deploy
+
+# Never run two deployments at once; let a running one finish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Flutter web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    env:
+      # Set a repository variable API_BASE_URL to override (Settings →
+      # Secrets and variables → Actions → Variables). Not a secret: the
+      # browser sees this URL anyway.
+      API_BASE_URL: ${{ vars.API_BASE_URL || 'https://gapcheck-api.onrender.com' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+      - run: flutter pub get
+      - run: flutter test
+      - name: Build
+        # The site lives under /gapcheck/, so asset paths need that prefix.
+        run: flutter build web --release --base-href /gapcheck/ --dart-define=API_BASE_URL="$API_BASE_URL"
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: app/build/web
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

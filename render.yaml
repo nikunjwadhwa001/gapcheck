@@ -1,0 +1,31 @@
+# Render Blueprint: the Go API as a free web service.
+# Render reads this file when you create a Blueprint from the repo.
+services:
+  - type: web
+    name: gapcheck-api
+    runtime: go
+    plan: free
+    region: singapore # closest Render region to India
+    rootDir: backend
+    buildCommand: go build -trimpath -ldflags="-s -w" -o bin/server ./cmd/server
+    startCommand: ./bin/server
+    healthCheckPath: /health
+    # Deploy only after GitHub CI passes for the commit.
+    autoDeployTrigger: checksPass
+    # Only backend changes trigger a redeploy.
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false # secret: Render asks for it once, it never lives in the repo
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_TIMEOUT
+        value: 30s
+      - key: GIN_MODE
+        value: release
+      # The web app's origins. Both schemes, because meetoova.me does not
+      # serve HTTPS yet.
+      - key: ALLOWED_ORIGINS
+        value: http://meetoova.me,https://meetoova.me,https://nikunjwadhwa001.github.io

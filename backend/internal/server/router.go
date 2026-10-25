@@ -26,6 +26,10 @@ type Config struct {
 // NewRouter wires up all HTTP routes for the API.
 func NewRouter(cfg Config) *gin.Engine {
 	r := gin.New()
+	// Don't trust X-Forwarded-For from anyone: a client could fake it to
+	// pretend to be another IP. Phase 5 (per-IP rate limits) revisits this
+	// once we know which header Render's proxy sets.
+	_ = r.SetTrustedProxies(nil)
 	r.Use(gin.Logger(), gin.Recovery(), cors(cfg.AllowedOrigins))
 
 	r.GET("/health", health)

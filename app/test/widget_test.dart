@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gapcheck/data/api_client.dart';
 import 'package:gapcheck/data/models.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:gapcheck/main.dart';
 import 'package:gapcheck/screens/results_screen.dart';
 import 'package:gapcheck/state/analysis_controller.dart';
@@ -37,14 +40,38 @@ const result = AnalysisResult(
 
 void main() {
   group('input screen', () {
+    late List<String> requested;
+
     Future<void> pumpApp(WidgetTester tester) async {
       // A desktop-sized window, so the whole form is on screen.
       tester.view.physicalSize = const Size(1200, 1600);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(const ProviderScope(child: GapCheckApp()));
+
+      // Record requests instead of hitting a real server.
+      requested = [];
+      final api = GapCheckApi(
+        baseUrl: 'http://api.test',
+        client: MockClient((req) async {
+          requested.add('${req.method} ${req.url.path}');
+          return http.Response('{"status":"ok"}', 200);
+        }),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [apiProvider.overrideWithValue(api)],
+          child: const GapCheckApp(),
+        ),
+      );
       await tester.pumpAndSettle();
     }
+
+    testWidgets('pings /health on start to wake a sleeping server', (
+      tester,
+    ) async {
+      await pumpApp(tester);
+      expect(requested, ['GET /health']);
+    });
 
     FilledButton analyzeButton(WidgetTester tester) => tester.widget(
       find.ancestor(
@@ -116,6 +143,17 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Comparing your resume with the job…'), findsOneWidget);
+    });
+
+    testWidgets('explains a cold start when loading takes a while', (
+      tester,
+    ) async {
+      await tester.pumpWidget(resultsWith(const AsyncLoading()));
+      await tester.pump();
+      expect(find.textContaining('waking up'), findsNothing);
+
+      await tester.pump(const Duration(seconds: 9));
+      expect(find.textContaining('waking up'), findsOneWidget);
     });
 
     testWidgets('rate limit error shows its title, message and retry', (

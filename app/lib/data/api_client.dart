@@ -76,6 +76,16 @@ class GapCheckApi {
     );
   }
 
+  /// Pings /health so a sleeping free-tier server starts waking up while
+  /// the user is still pasting text. Failures don't matter here.
+  Future<void> wakeUp() async {
+    try {
+      await _client.get(Uri.parse('$baseUrl/health')).timeout(timeout);
+    } catch (_) {
+      // The real request will report any problem properly.
+    }
+  }
+
   static Object? _tryDecode(String body) {
     try {
       return jsonDecode(body);

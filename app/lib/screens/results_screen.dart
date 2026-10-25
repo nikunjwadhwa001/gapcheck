@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -45,8 +47,31 @@ class ResultsScreen extends ConsumerWidget {
   }
 }
 
-class _Loading extends StatelessWidget {
+class _Loading extends StatefulWidget {
   const _Loading();
+
+  /// After this long, explain that the free server may be waking up.
+  static const slowAfter = Duration(seconds: 8);
+
+  @override
+  State<_Loading> createState() => _LoadingState();
+}
+
+class _LoadingState extends State<_Loading> {
+  late final Timer _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(_Loading.slowAfter, () => setState(() => _slow = true));
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +91,12 @@ class _Loading extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'This usually takes a few seconds.',
+              _slow
+                  ? 'The free server is waking up after a quiet spell. '
+                        'This first analysis can take up to a minute.'
+                  : 'This usually takes a few seconds.',
               style: theme.textTheme.bodySmall,
+              textAlign: TextAlign.center,
             ),
           ],
         ),

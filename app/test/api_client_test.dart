@@ -91,6 +91,16 @@ void main() {
     expect(analyze(api), throwsA(apiError('network')));
   });
 
+  test('wakeUp pings /health and never throws', () async {
+    final paths = <String>[];
+    await apiWith((req) async {
+      paths.add('${req.method} ${req.url.path}');
+      throw http.ClientException('still asleep');
+    }).wakeUp();
+
+    expect(paths, ['GET /health']);
+  });
+
   test('a slow server becomes code "timeout"', () {
     final api = apiWith((_) async {
       await Future<void>.delayed(const Duration(milliseconds: 200));

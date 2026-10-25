@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +19,14 @@ class InputScreen extends ConsumerStatefulWidget {
 class _InputScreenState extends ConsumerState<InputScreen> {
   final _resume = TextEditingController();
   final _jd = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Start waking the free-tier server now; pasting takes longer than its
+    // ~1 minute cold start, so the first analysis is usually fast.
+    unawaited(ref.read(apiProvider).wakeUp());
+  }
 
   @override
   void dispose() {

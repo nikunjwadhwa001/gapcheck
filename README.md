@@ -2,7 +2,9 @@
 
 Score your resume against a job description. GapCheck highlights missing keywords and suggests targeted improvements, using LLM-based analysis that returns structured feedback rather than free-form text.
 
-> Status: early development (Phase 2 — Flutter UI).
+**Live:** http://meetoova.me/gapcheck/ · API: https://gapcheck-api.onrender.com/health
+
+> Status: early development (Phase 3 — deployed). The free API server sleeps after 15 idle minutes, so the first analysis after a quiet spell can take up to a minute.
 
 ## Stack
 
@@ -55,12 +57,17 @@ flutter test
 
 The app calls `http://localhost:8080` by default. Point it elsewhere with `--dart-define=API_BASE_URL=https://...`. Port 3000 rather than 5000, because macOS AirPlay Receiver already uses 5000.
 
+## Deployment
+
+- **Web app:** `.github/workflows/pages.yml` tests, builds and publishes `app/` to GitHub Pages on every push to `main` that changes `app/**`. The API URL comes from the `API_BASE_URL` repository variable (default `https://gapcheck-api.onrender.com`).
+- **API:** `render.yaml` defines a free Render web service. Render deploys `backend/` after CI passes. `GEMINI_API_KEY` is set in Render's dashboard, never in the repo.
+
 ## Roadmap
 
 - [x] Phase 0 — Repo scaffolding and CI
 - [x] Phase 1 — `/api/analyze`: resume + JD → structured score, keywords, suggestions
 - [x] Phase 2 — Flutter UI (input, results)
-- [ ] Phase 3 — Deploy (GitHub Pages + Render)
+- [x] Phase 3 — Deploy (GitHub Pages + Render)
 - [ ] Phase 4 — PDF / DOCX resume upload
 - [ ] Phase 5 — Deterministic keyword score, rate limiting, caching
 
