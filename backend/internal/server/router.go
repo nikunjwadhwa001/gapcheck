@@ -18,14 +18,15 @@ type Analyzer interface {
 
 // Config holds the router's dependencies.
 type Config struct {
-	Analyzer   Analyzer
-	LLMTimeout time.Duration // max time for one analysis
+	Analyzer       Analyzer
+	LLMTimeout     time.Duration // max time for one analysis
+	AllowedOrigins []string      // browser origins allowed by CORS
 }
 
 // NewRouter wires up all HTTP routes for the API.
 func NewRouter(cfg Config) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	r.Use(gin.Logger(), gin.Recovery(), cors(cfg.AllowedOrigins))
 
 	r.GET("/health", health)
 

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -31,7 +32,11 @@ func main() {
 	}
 
 	svc := analysis.NewService(gemini.New(apiKey, model))
-	r := server.NewRouter(server.Config{Analyzer: svc, LLMTimeout: timeout})
+	r := server.NewRouter(server.Config{
+		Analyzer:       svc,
+		LLMTimeout:     timeout,
+		AllowedOrigins: strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","),
+	})
 
 	log.Printf("gapcheck api listening on :%s (model %s)", port, model)
 	if err := r.Run(":" + port); err != nil {

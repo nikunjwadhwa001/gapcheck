@@ -2,7 +2,7 @@
 
 Score your resume against a job description. GapCheck highlights missing keywords and suggests targeted improvements, using LLM-based analysis that returns structured feedback rather than free-form text.
 
-> Status: early development (Phase 1 — analyze API).
+> Status: early development (Phase 2 — Flutter UI).
 
 ## Stack
 
@@ -49,15 +49,17 @@ Returns `score`, `summary`, `matched_keywords`, `missing_keywords` and `suggesti
 ```bash
 cd app
 flutter pub get
-flutter run -d chrome
+flutter run -d chrome --web-port 3000   # the API allows this origin via ALLOWED_ORIGINS
 flutter test
 ```
+
+The app calls `http://localhost:8080` by default. Point it elsewhere with `--dart-define=API_BASE_URL=https://...`. Port 3000 rather than 5000, because macOS AirPlay Receiver already uses 5000.
 
 ## Roadmap
 
 - [x] Phase 0 — Repo scaffolding and CI
 - [x] Phase 1 — `/api/analyze`: resume + JD → structured score, keywords, suggestions
-- [ ] Phase 2 — Flutter UI (input, results)
+- [x] Phase 2 — Flutter UI (input, results)
 - [ ] Phase 3 — Deploy (GitHub Pages + Render)
 - [ ] Phase 4 — PDF / DOCX resume upload
 - [ ] Phase 5 — Deterministic keyword score, rate limiting, caching

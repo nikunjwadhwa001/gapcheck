@@ -1,58 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import 'router.dart';
+import 'theme.dart';
 
 void main() {
-  runApp(const GapCheckApp());
+  // ProviderScope holds the state of every Riverpod provider in the app.
+  runApp(const ProviderScope(child: GapCheckApp()));
 }
 
-class GapCheckApp extends StatelessWidget {
+class GapCheckApp extends StatefulWidget {
   const GapCheckApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GapCheck',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.indigo,
-          brightness: Brightness.dark,
-        ),
-      ),
-      home: const HomePage(),
-    );
-  }
+  State<GapCheckApp> createState() => _GapCheckAppState();
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class _GapCheckAppState extends State<GapCheckApp> {
+  // Created once per app, so navigation state survives rebuilds.
+  final GoRouter _router = createRouter();
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('GapCheck', style: textTheme.displaySmall),
-              const SizedBox(height: 12),
-              Text(
-                'Score your resume against a job description.',
-                style: textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text('Coming soon', style: textTheme.bodySmall),
-            ],
-          ),
-        ),
-      ),
+    return MaterialApp.router(
+      title: 'GapCheck',
+      debugShowCheckedModeBanner: false,
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
+      routerConfig: _router,
     );
   }
 }
